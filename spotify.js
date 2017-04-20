@@ -18,14 +18,32 @@ var getArtist = function(name) {
     .then(item => {
         artist = item.artists.items[0];
         return getFromApi(`artists/${artist.id}/related-artists`)
-        .then(item => {
-                artist.related = item.artists;
-                
-                return artist;
-            })
-        .catch(function(err) {
+        .then(item => { 
+            artist.related= item.artists;
+                let topTracksPromise = artist.related.map((artist) => {
+                    console.log(artist.id);
+                   return getFromApi(`artists/${artist.id}/top-tracks`, query={country: 'US'})
+                })
+                    console.log(topTracksPromise);
+
+                    var promise= Promise.all(topTracksPromise);
+
+                   return promise
+                    .then(eachArtist => {
+                            console.log(eachArtist, 'all promise reslove');
+                          //  artist.tracks = eachArtist.tracks;
+                          for(let i = 0; i< eachArtist.length; i++) {
+                              artist.related[i].tracks = eachArtist[i].tracks;
+                          }
+
+                            return artist;
+                        });
+                })
+            .catch(function(err) {
             console.log(err);
         });
     });
-
 }
+
+
+
